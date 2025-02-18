@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
@@ -30,6 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.a130225.ui.theme._130225Theme
 
 class MainActivity : ComponentActivity() {
@@ -39,62 +44,97 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             _130225Theme {
-                Scaffold(
-                    topBar = {
-                        var expanded by remember { mutableStateOf(false) }
-
-                        TopAppBar (
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.primary,
-                            ),
-                            title = {
-                                Text("M-app")
-                            },
-                            navigationIcon = {
-                                IconButton(
-                                    onClick = {}
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Menu,
-                                        contentDescription = "Menu"
-                                    )
-                                }
-                            },
-                            actions = {
-                                IconButton(
-                                    onClick = {
-                                        expanded = !expanded
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.MoreVert,
-                                        contentDescription = "More"
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("Info") },
-                                        onClick = { expanded = false }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Settings") },
-                                        onClick = { expanded = false }
-                                    )
-                                }
-                            }
-                        )
-                    }
-                ) {
-                    innerPadding ->
-                    Counter(modifier = Modifier.padding(innerPadding))
-                }
+                ScaffoldApp()
             }
         }
     }
+}
+
+@Composable
+fun ScaffoldApp() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        composable(route = "home") { MainScreen(navController) }
+        composable(route = "info") { InfoScreen(navController) }
+        composable(route = "settings") { SettingsScreen(navController) }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainTopBar(title: String, navController: NavController) {
+    var expanded by remember { mutableStateOf(false) }
+
+    TopAppBar (
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ),
+        title = {
+            Text(title)
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = {}
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = "Menu"
+                )
+            }
+        },
+        actions = {
+            IconButton(
+                onClick = {
+                    expanded = !expanded
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = "More"
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Info") },
+                    onClick = { navController.navigate("info") }
+                )
+                DropdownMenuItem(
+                    text = { Text("Settings") },
+                    onClick = { navController.navigate("settings") }
+                )
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScreenTopBar(title: String, navController: NavController) {
+    TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ),
+        title = { Text(title) },
+        navigationIcon = {
+            IconButton(
+                onClick = { navController.navigateUp() }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+        },
+    )
 }
 
 
@@ -109,6 +149,41 @@ fun Counter(modifier: Modifier = Modifier) {
             .padding(16.dp)
     ) {
         Text("Count $counter")
+    }
+}
+
+@Composable
+fun MainScreen(navController: NavController) {
+    Scaffold(
+        topBar = { MainTopBar("My App", navController) }
+    ){ innerPadding ->
+        Counter(
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+@Composable
+fun InfoScreen(navController: NavController) {
+    Scaffold(
+        topBar = { ScreenTopBar("Info", navController) }
+    ) { innerPadding ->
+        Text(
+            text = "This is Info Screen",
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+@Composable
+fun SettingsScreen(navController: NavController) {
+    Scaffold(
+        topBar = { ScreenTopBar("Settings", navController) }
+    ) { innerPadding ->
+        Text(
+            text = "This is Settings Screen",
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }
 
